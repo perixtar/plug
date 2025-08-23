@@ -8,7 +8,7 @@ import {
 import { codeArtifactSchema } from "@/lib/schema";
 import { CodeTemplate } from "@/types/code-template";
 import { LanguageModel, CoreMessage, generateText, streamObject } from "ai";
-import { createWebSearchTool } from "./tools";
+import { createWebSearchTool, imageSearch } from "./tools";
 
 type UserSettings = { webSearchEnabled: boolean };
 
@@ -30,13 +30,13 @@ export async function runUserIntentAgent(
   if (settings.webSearchEnabled) {
     tools.webSearch = createWebSearchTool({ enabled: true });
   }
+  tools.imageSearch = imageSearch;
   const systemPrompt = getUserIntentSystemPrompt(
     template,
     databaseSchemas,
     databaseConnectionEnvs,
     projectId
   );
-  console.log("System Prompt: ", systemPrompt);
   const { text } = await generateText({
     model: modelClient,
     system: systemPrompt,

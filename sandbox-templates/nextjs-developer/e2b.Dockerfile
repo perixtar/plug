@@ -18,7 +18,7 @@ RUN npm install
 COPY layout.tsx app/layout.tsx
 COPY PostHogProviderWrapper.tsx app/PostHogProviderWrapper.tsx
 COPY config/firebase-admin-config.ts config/firebase-admin-config.ts
-# COPY config/excel-firebase-admin-config.ts config/excel-firebase-admin-config.ts
+COPY next.config.ts next.config.ts
 
 RUN npm install tailwindcss @tailwindcss/postcss postcss
 RUN npx shadcn@2.10.0 init -b neutral

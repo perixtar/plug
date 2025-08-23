@@ -88,3 +88,88 @@ export function createWebSearchTool({ enabled }: { enabled: boolean }) {
     },
   });
 }
+
+type NormalizedImage = {
+  id: string;
+  src: string; // full/regular size URL
+  thumb: string; // small/thumbnail URL
+  width: number;
+  height: number;
+  alt: string;
+  authorName?: string;
+  authorUrl?: string;
+  attribution?: string; // e.g., "Photo by X on Unsplash"
+  source: "unsplash" | "pexels";
+};
+
+async function searchUnsplash(
+  query: string,
+  count: number,
+  orientation?: string,
+  color?: string
+): Promise<NormalizedImage[]> {
+  const key = process.env.UNSPLASH_ACCESS_KEY;
+  if (!key) throw new Error("UNSPLASH_ACCESS_KEY is not set");
+
+  const url = new URL("https://api.unsplash.com/search/photos");
+  url.searchParams.set("query", query);
+  url.searchParams.set("per_page", String(count));
+  if (orientation) url.searchParams.set("orientation", orientation);
+  if (color) url.searchParams.set("color", color);
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Client-ID ${key}` },
+    cache: "no-store",
+  });
+  if (!res.ok)
+    throw new Error(`Unsplash error: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+
+  return (data.results ?? []).map(
+    (p: any): NormalizedImage => ({
+      id: String(p.id),
+      src: p.urls?.regular ?? p.urls?.full ?? "",
+      thumb: p.urls?.small ?? p.urls?.thumb ?? "",
+      width: p.width,
+      height: p.height,
+      alt: p.alt_description ?? p.description ?? "Unsplash image",
+      authorName: p.user?.name,
+      authorUrl: p.user?.links?.html,
+      attribution: p.user?.name
+        ? `Photo by ${p.user.name} on Unsplash`
+        : "Unsplash",
+      source: "unsplash",
+    })
+  );
+}
+
+export const imageSearch = tool({
+  description:
+    "Find beautiful, relevant stock images for UI (Unsplash default).",
+  parameters: z.object({
+    query: z
+      .string()
+      .min(1)
+      .max(100)
+      .describe(
+        'Search keywords to find images, e.g. "modern SaaS dashboard background"'
+      ),
+    count: z
+      .number()
+      .int()
+      .min(1)
+      .max(12)
+      .default(6)
+      .describe("How many images to return"),
+    orientation: z.enum(["landscape", "portrait", "squarish"]).optional(),
+    color: z
+      .string()
+      .optional()
+      .describe('Unsplash color hint, e.g. "blue", "black", "teal"'),
+    provider: z.enum(["unsplash", "pexels"]).default("unsplash"),
+  }),
+  execute: async ({ query, count, orientation, color, provider }) => {
+    // default to Unsplash
+    return await searchUnsplash(query, count, orientation, color);
+  },
+});
