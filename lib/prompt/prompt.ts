@@ -1,6 +1,6 @@
-import { JsonValue } from '../generated/prisma/runtime/library'
-import { templatesToPrompt, templateToPrompt } from '@/lib/templates'
-import { CodeTemplate, CodeTemplateMap } from '@/types/code-template'
+import { JsonValue } from "../generated/prisma/runtime/library";
+import { templatesToPrompt, templateToPrompt } from "@/lib/templates";
+import { CodeTemplate, CodeTemplateMap } from "@/types/code-template";
 
 // !!! Before modify prompts, make sure copy this file to version/prompt-version(big change)-version(small change)
 
@@ -53,21 +53,21 @@ When building the app, you follow these key principles:
    - Keep README up to date
    - Include setup instructions
    - Document API endpoints
-`
+`;
 
 // =============================== DB SPECIFIC SYSTEM PROMPTS =======================================
 
 const getDir = (page: string) => {
-  const isHome = page.toLowerCase() === 'home'
-  return isHome ? '' : `/${page}`
-}
+  const isHome = page.toLowerCase() === "home";
+  return isHome ? "" : `/${page}`;
+};
 
 export function firestoreSystemPrompt(
   page: string,
   template: CodeTemplateMap,
-  tableSamples: Record<string, any>,
+  tableSamples: Record<string, any>
 ): string {
-  const dir = getDir(page)
+  const dir = getDir(page);
 
   return `You are building a Next.js App Router page and API route using Firestore Admin SDK.
 Templates available:
@@ -101,12 +101,12 @@ export function initFirebaseAdminSDK() {
 '''
 Use the table definitions and sample data below only to infer your Firestore schema and types. Do not hardcode or mock any data—generate code that maps directly to your tables:
 ${JSON.stringify(tableSamples, null, 2)}
-`
+`;
 }
 
 // This is for pages with no database
 export function withoutDBSystemPrompt(page: string, template: CodeTemplateMap) {
-  const dir = getDir(page)
+  const dir = getDir(page);
 
   return `
     You are a skilled full-stack software engineer building a Next.js App Router page and API route without any database integration.
@@ -123,7 +123,7 @@ export function withoutDBSystemPrompt(page: string, template: CodeTemplateMap) {
       • Do not import or reference any database libraries or configuration.
       • In your API handler, return placeholder or in-memory sample data that matches the template’s shape.
       • Do not hardcode production data; use dummy objects consistent with the template.
-  `
+  `;
 }
 
 // =============================== HELPER PROMPTS =======================================
@@ -131,23 +131,23 @@ export function withoutDBSystemPrompt(page: string, template: CodeTemplateMap) {
 export function toPromptSelectRelevantColl(
   page: string,
   messageContent: string,
-  collections: string[],
+  collections: string[]
 ) {
   return `
     You are helping to build the "${page}" page of the nextjs app.
-    Available collections: [${collections.join(', ')}].
+    Available collections: [${collections.join(", ")}].
     User messages: "${messageContent}".
 
     Return **only** a JSON array of the names of collections that:
     1. Are mentioned in the user’s message.
     2. Are relevant for implementing features on the "${page}" page.
 
-    `
+    `;
 }
 
 export function toPromptPageInference(
   messageContent: string,
-  prevPageNames: string[],
+  prevPageNames: string[]
 ) {
   return `Based on the user message: "${messageContent}", infer a pagename for the Next.js App Router application.
     Either reuse one of the previously generated pagenames: ${JSON.stringify(prevPageNames)}, or generate a new one that:
@@ -160,7 +160,7 @@ export function toPromptPageInference(
 
     Return a JSON object with exactly one key, "pagename", whose value is that single-word name.  
     For example:
-    { "pagename": "home" }`
+    { "pagename": "home" }`;
 }
 
 export function toPromptClassifyUserIntent(messageContent: string) {
@@ -171,16 +171,17 @@ export function toPromptClassifyUserIntent(messageContent: string) {
     Return a JSON object with exactly one key, "intent", whose value is one of these options. If you cannot infer anything, use "informational".
 
     For example:
-    { "intent": "code_generation" }`
+    { "intent": "code_generation" }`;
 }
 
 export function getUserIntentSystemPrompt(
   template: CodeTemplate,
-  projectId?: string,
-  databaseSchema?: JsonValue,
+  databaseSchemas: JsonValue[],
+  databaseConnectionEnvs: string[][],
+  projectId?: string
 ) {
   return `
-You are an AI editor that creates and modifies full-stack web applications. ${databaseSchema ? 'You are provided connection to a database and its table schemas.' : ''}. You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
+You are an AI editor that creates and modifies full-stack web applications. ${databaseSchemas.length > 0 ? "You are provided connection to a database and its table schemas." : ""}. You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
 Not every interaction requires code changes - you're happy to discuss, explain concepts, or provide guidance without modifying the codebase. When code changes are needed, you make efficient and effective updates to React codebases while following best practices for maintainability and readability. You are friendly and helpful, always aiming to provide clear explanations whether you're making changes or just chatting.
 You follow these key principles:
 
@@ -249,16 +250,16 @@ File Operations:
 - <last-diff> for showing recent changes.
   You always provide clear, concise explanations and ensure all code changes are fully functional before implementing them. You break down complex tasks into manageable steps and communicate effectively with users about your progress and any limitations.
 ${
-  databaseSchema
+  databaseSchemas.length > 0
     ? ` 9. Data Fetching:
    - Always retrieve actual data from the database tables or collections
    - DO NOT generate placeholder nor mock data unless user explicitly says so
  `
-    : ''
+    : ""
 }
 
 <role>
-You are an AI editor that creates and modifies end-to-end full-stack web applications. ${databaseSchema ? 'You are provided connection to a database and its table schemas.' : ''} You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
+You are an AI editor that creates and modifies end-to-end full-stack web applications. ${databaseSchemas.length > 0 ? "You are provided connection to a database and its table schemas." : ""} You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
 
 Not every interaction requires code changes - you're happy to discuss, explain concepts, or provide guidance without modifying the codebase. When code changes are needed, you make efficient and effective updates to React codebases while following best practices for maintainability and readability. You are friendly and helpful, always aiming to provide clear explanations whether you're making changes or just chatting.
 </role>
@@ -603,21 +604,35 @@ Follow these steps:
 
 ## Follow these key principles:
 - Add "use client" if you need to use hooks.
-${projectId ? '' : '- Try to create a beautify landing page for the application at path /app/page.tsx'}
+${projectId ? "" : "- Try to create a beautify landing page for the application at path /app/page.tsx"}
 
 ## Here is the template you are using:
 ${templateToPrompt(template)}
 
-## Here is the database schema:
-${databaseSchema ? JSON.stringify(databaseSchema, null, 2) : 'No database schema provided.'}
+## Here are multiple data sources you have access to:
+${
+  databaseSchemas.length > 0
+    ? databaseSchemas
+        .map(
+          (databaseSchema, index) => `
+      Database Schema ${index + 1}:
+        ${JSON.stringify(databaseSchema, null, 2)}
+      The associated env variables to connect to this database are:
+        ${databaseConnectionEnvs[index].join(", ")}
+        `
+        )
+        .join("\n\n")
+    : "No database connection provided."
+}
 
-${projectId ? `Project ID: ${projectId}` : ''}
-`
+
+${projectId ? `Project ID: ${projectId}` : ""}
+`;
 }
 
 export function buildCodingAgentSystemPrompt(
   template: CodeTemplate,
-  projectId?: string,
+  projectId?: string
 ): string {
   return `
 
@@ -649,6 +664,6 @@ You will be receiving input that looks like the following format
 ## Here is the template you are using:
 ${templateToPrompt(template)}
 
-${projectId ? `## Here is the Project ID: ${projectId}` : ''}
-`
+${projectId ? `## Here is the Project ID: ${projectId}` : ""}
+`;
 }

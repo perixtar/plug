@@ -170,6 +170,7 @@ model workspace_database {
   nickname          String
   updated_at        DateTime  @default(now()) @db.Timestamptz(6)
   table_sample      Json?
+  connection_envs   String[]
   tool              tool[]
   workspace         workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade, map: "tool_database_workspace_id_fkey")
 

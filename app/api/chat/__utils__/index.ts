@@ -20,7 +20,8 @@ export async function runUserIntentAgent(
   messages: CoreMessage[],
   template: CodeTemplate,
   modelClient: LanguageModel,
-  databaseSchema?: JsonValue,
+  databaseSchemas: JsonValue[],
+  databaseConnectionEnvs: string[][] = [],
   projectId?: string
 ): Promise<string> {
   const settings = await getUserSettings();
@@ -31,9 +32,11 @@ export async function runUserIntentAgent(
   }
   const systemPrompt = getUserIntentSystemPrompt(
     template,
-    projectId,
-    databaseSchema
+    databaseSchemas,
+    databaseConnectionEnvs,
+    projectId
   );
+  console.log("System Prompt: ", systemPrompt);
   const { text } = await generateText({
     model: modelClient,
     system: systemPrompt,
