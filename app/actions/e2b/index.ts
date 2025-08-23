@@ -15,7 +15,7 @@ const sandboxRequestTimeout = 30 * 60 * 100; // 3 minutes in ms
 
 export async function runCodeAndCommandsInSandbox(
   codeArtifact: CodeArtifact,
-  toolDb: workspace_database,
+  toolDbs: workspace_database[],
   userID: string,
   sandboxId?: string // use sandboxId for redeployment purpose
 ) {
@@ -50,12 +50,13 @@ export async function runCodeAndCommandsInSandbox(
     });
   } else {
   }
-
-  const encryptedCred = toolDb.credential_zipped;
-  console.log("ready to copy env file to sandbox", sbx.sandboxId);
-  if (encryptedCred) {
-    const dbConfig = await decryptConfig(DbType.Firestore, encryptedCred);
-    await copyEnvFileToSandbox(sbx, dbConfig);
+  for (const toolDb of toolDbs) {
+    const encryptedCred = toolDb.credential_zipped;
+    console.log("ready to copy env file to sandbox", sbx.sandboxId);
+    if (encryptedCred) {
+      const dbConfig = await decryptConfig(DbType.Firestore, encryptedCred);
+      await copyEnvFileToSandbox(sbx, dbConfig, toolDb.connection_envs);
+    }
   }
 
   return {

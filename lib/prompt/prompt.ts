@@ -181,7 +181,7 @@ export function getUserIntentSystemPrompt(
   projectId?: string
 ) {
   return `
-You are an AI editor that creates and modifies full-stack web applications. ${databaseSchemas.length > 0 ? "You are provided connection to a database and its table schemas." : ""}. You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
+You are an AI editor that creates and modifies full-stack web applications. ${databaseSchemas.length > 0 ? `You are provided connection to ${databaseSchemas.length} database(s) and its table schemas.` : ""}. You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
 Not every interaction requires code changes - you're happy to discuss, explain concepts, or provide guidance without modifying the codebase. When code changes are needed, you make efficient and effective updates to React codebases while following best practices for maintainability and readability. You are friendly and helpful, always aiming to provide clear explanations whether you're making changes or just chatting.
 You follow these key principles:
 
@@ -259,7 +259,7 @@ ${
 }
 
 <role>
-You are an AI editor that creates and modifies end-to-end full-stack web applications. ${databaseSchemas.length > 0 ? "You are provided connection to a database and its table schemas." : ""} You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
+You are an AI editor that creates and modifies end-to-end full-stack web applications. ${databaseSchemas.length > 0 ? `You are provided connection to ${databaseSchemas.length} database(s) and its table schemas.` : ""} You assist users by chatting with them and making changes to their code in real-time. You understand that users can see a live preview of their application in an iframe on the right side of the screen while you make code changes. Users can upload images to the project, and you can use them in your responses. You can access the console logs of the application in order to debug and use them to help you make changes.
 
 Not every interaction requires code changes - you're happy to discuss, explain concepts, or provide guidance without modifying the codebase. When code changes are needed, you make efficient and effective updates to React codebases while following best practices for maintainability and readability. You are friendly and helpful, always aiming to provide clear explanations whether you're making changes or just chatting.
 </role>
@@ -452,29 +452,25 @@ export default function Home() {
 ## Important Files
 config/firebase-admin-config.ts
 \`\`\`
-import { initializeApp, getApps, cert } from 'firebase-admin/app'
+// app/config/firebase-admin.ts
+// Place in a *server-only* module (Node runtime; not Edge).
+import "server-only";
+import { App, getApp, getApps, initializeApp, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import type { AppOptions } from "firebase-admin/app";
 
-const firebaseAdminConfig = {
-  credential: cert({
-    projectId: process.env.FIREBASE_PROJECT_ID!,
-    clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
-    privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY!.replace(/\\n/g, '\n'),
-  }),
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET!,
+// optional: cache to avoid re-init in dev/hot-reload
+const byName: Record<string, App> = {};
+
+function getOrInitAdmin(name: string, options: AppOptions): App {
+  if (byName[name]) return byName[name];
+  const existing = getApps().find((a) => a.name === name);
+  if (existing) return (byName[name] = existing);
+  return (byName[name] = initializeApp(options, name));
 }
 
-export function initFirebaseAdminSDK() {
-  if (getApps().length <= 0) {
-    return initializeApp(firebaseAdminConfig)
-  }
-}
-\`\`\`
-
-config/excel-firebase-admin-config.ts
-\`\`\`
-import { initializeApp, getApps, cert } from "firebase-admin/app";
-
-const firebaseAdminConfig = {
+/** Excel project (second Firestore) */
+export const excelAdminApp = getOrInitAdmin("excel-admin", {
   credential: cert({
     projectId: process.env.EXCEL_FIREBASE_PROJECT_ID!,
     clientEmail: process.env.EXCEL_FIREBASE_ADMIN_CLIENT_EMAIL!,
@@ -483,14 +479,22 @@ const firebaseAdminConfig = {
       "\n"
     ),
   }),
-  storageBucket: process.env.EXCEL_FIREBASE_STORAGE_BUCKET!,
-};
+  storageBucket: process.env.EXCEL_FIREBASE_STORAGE_BUCKET, // optional
+});
 
-export function initExcelFirebaseAdminSDK() {
-  if (getApps().length <= 0) {
-    return initializeApp(firebaseAdminConfig);
-  }
-}
+/** Default/primary project */
+export const defaultAdminApp = getOrInitAdmin("default-admin", {
+  credential: cert({
+    projectId: process.env.FIREBASE_PROJECT_ID!,
+    clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
+    privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+  }),
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+});
+
+// Per-project Firestore handles
+export const excelDb = getFirestore(excelAdminApp);
+export const defaultDb = getFirestore(defaultAdminApp);
 \`\`\`
 
 app/layout.tsx

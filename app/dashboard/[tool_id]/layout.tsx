@@ -1,21 +1,21 @@
-import { getToolPageStartData } from '@/app/actions/app-start'
-import { ToolDataProvider } from '@/app/providers'
-import { Button } from '@/components/ui/button'
-import { SiteURL } from '@/constants/site-url'
-import { ToolNotFoundException } from '@/exceptions/tool-not-found'
-import { ArrowLeft, Pencil } from 'lucide-react'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { getToolPageStartData } from "@/app/actions/app-start";
+import { ToolDataProvider } from "@/app/providers";
+import { Button } from "@/components/ui/button";
+import { SiteURL } from "@/constants/site-url";
+// import { ToolNotFoundException } from '@/exceptions/tool-not-found'
+import { ArrowLeft, Pencil } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 type ViewToolPageProps = {
-  children: React.ReactNode
-  params: Promise<{ tool_id: string }>
-}
+  children: React.ReactNode;
+  params: Promise<{ tool_id: string }>;
+};
 
 const ViewToolLayout = async ({ children, params }: ViewToolPageProps) => {
-  const { tool_id } = await params
+  const { tool_id } = await params;
   try {
-    const tool_page_start_data = await getToolPageStartData(tool_id)
+    const tool_page_start_data = await getToolPageStartData(tool_id);
     return (
       <ToolDataProvider
         tool={tool_page_start_data.current_tool}
@@ -53,13 +53,13 @@ const ViewToolLayout = async ({ children, params }: ViewToolPageProps) => {
 
         {children}
       </ToolDataProvider>
-    )
+    );
   } catch (error) {
-    if (error instanceof ToolNotFoundException) {
-      notFound()
-    }
-    throw error
+    // if (error instanceof ToolNotFoundException) {
+    //   notFound();
+    // }
+    throw error;
   }
-}
+};
 
-export default ViewToolLayout
+export default ViewToolLayout;

@@ -1,13 +1,11 @@
 "use client";
 
 import { createChatMessage } from "@/app/actions/message/create-message";
-import { updateAssistantMessageDeploymentId } from "@/app/actions/message/update-message";
 import {
   updateCurrentToolMessage,
   updateToolLatestCodeArtifact,
 } from "@/app/actions/tool/update-tool";
 import { deployThroughFiles } from "@/app/actions/vercel/deploy";
-import { usePageStore } from "@/app/store/page-store";
 import useProfileStore from "@/app/store/profile-store";
 import useStripeCustomerStore from "@/app/store/stripe-customer-store";
 import { useToolMessageStore } from "@/app/store/tool-message-store";
@@ -17,7 +15,6 @@ import { useToolViewStore } from "@/app/store/tool-view-store";
 import useWorkspaceStore from "@/app/store/workspace-store";
 import { Chat } from "@/components/chat";
 import { ChatInput } from "@/components/chat-input";
-import { LogoLink } from "@/components/nav/logo-link";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Templates } from "@/constants/templates";
@@ -36,6 +33,7 @@ import type React from "react";
 import { useRef, useState, useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useShallow } from "zustand/react/shallow";
+import { getWorkspaceDatabase } from "@/app/actions/workspace/workspace-databases";
 
 export default function ChatLeftPanel() {
   const MAX_MSGS = 6; // at max pass in N msgs to llm as context
@@ -96,7 +94,6 @@ export default function ChatLeftPanel() {
       throw new Error("Failed to fetch sheet data");
     }
     const data = await res.json();
-    console.log("ZUDAO:", data);
     return data;
   }
 
@@ -192,9 +189,12 @@ export default function ChatLeftPanel() {
     try {
       setCurrentTab(ToolViewTab.PREVIEW);
       setIsPreviewLoading(false);
+      const excelToolDb = await getWorkspaceDatabase(
+        "8eef4a77-6a46-4886-ae1d-f05f29112ddf"
+      );
       const deploymentResult = await deployThroughFiles(
         mergedCodeArtifact,
-        tool_db!,
+        [tool_db!, excelToolDb!],
         user!.id,
         current_tool.id,
         TemplateId.nextjs15_v1
