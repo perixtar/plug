@@ -61,5 +61,5 @@ export async function POST(req: Request) {
     projectId
   );
 
-  return result.toTextStreamResponse();
+  return NextResponse.json(result.object);
 }

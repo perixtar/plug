@@ -278,7 +278,7 @@ export function ChatInput({
                       onSelect={() => addSource("files")}
                     >
                       <Paperclip className="h-4 w-4" />
-                      Excel Sheet (HousingData.csv)
+                      Excel Sheet (client_leads.csv)
                     </DropdownMenuItem>
 
                     <DropdownMenuItem

@@ -7,7 +7,13 @@ import {
 } from "@/lib/prompt/prompt";
 import { codeArtifactSchema } from "@/lib/schema";
 import { CodeTemplate } from "@/types/code-template";
-import { LanguageModel, CoreMessage, generateText, streamObject } from "ai";
+import {
+  LanguageModel,
+  CoreMessage,
+  generateText,
+  streamObject,
+  generateObject,
+} from "ai";
 import { createWebSearchTool, imageSearch } from "./tools";
 
 type UserSettings = { webSearchEnabled: boolean };
@@ -61,7 +67,7 @@ export async function runCodingAgentStream(
   messages: CoreMessage[],
   projectId?: string
 ) {
-  const result = await streamObject({
+  const result = await generateObject({
     model: modelClient,
     schema: codeArtifactSchema,
     system: buildCodingAgentSystemPrompt(template, projectId),

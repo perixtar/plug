@@ -2,7 +2,7 @@
   "nextjs15-v1": {
     "name": "Next.js 15 App Router",
     "lib": [
-      "nextjs@14.2.5",
+      "nextjs@15.4.4",
       "typescript",
       "@types/node",
       "@types/react",
@@ -10,7 +10,8 @@
       "postcss",
       "tailwindcss",
       "shadcn",
-      "firebase-admin"
+      "firebase-admin",
+      "framer-motion"
     ],
     "file": "app/page.tsx",
     "instructions": "A Next.js 14+ app that reloads automatically. Using the app router.",

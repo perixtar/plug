@@ -24,6 +24,7 @@ RUN npm install tailwindcss @tailwindcss/postcss postcss
 RUN npx shadcn@2.10.0 init -b neutral
 RUN npx shadcn@2.10.0 add --all
 RUN npm install posthog-js
+RUN npm install framer-motion
 
 # Should we install this and supabase dependency in sandbox directly only when
 # user selected to use Firestore

@@ -113,7 +113,7 @@ export default function ChatLeftPanel() {
   const [languageModel, setLanguageModel] = useLocalStorage<LLMModelConfig>(
     "languageModel",
     {
-      model: "claude-3-5-sonnet-latest",
+      model: "claude-3-7-sonnet-latest",
     } as LLMModelConfig
   );
   const currentModel = filteredModels.find(
