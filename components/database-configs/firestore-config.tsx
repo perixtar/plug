@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { checkNicknameDup } from './database-config-lib'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
+import { checkNicknameDup } from "./database-config-lib";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,29 +10,29 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { workspace_database } from '@/lib/generated/prisma'
-import { CheckCircle2, XCircle, Loader2, Database, Key } from 'lucide-react'
-import type React from 'react'
-import { useState } from 'react'
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { workspace_database } from "@/lib/generated/prisma";
+import { CheckCircle2, XCircle, Loader2, Database, Key } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface FirestoreConfigProps {
   onConnectionTested: (
     success: boolean,
-    config: FirestoreConfigInterface,
-  ) => void
-  existingDatabases: workspace_database[] | []
+    config: FirestoreConfigInterface
+  ) => void;
+  existingDatabases: workspace_database[] | [];
 }
 
 export interface FirestoreConfigInterface {
-  nickname: string
-  projectId: string
-  clientEmail: string
-  privateKey: string
-  databaseURL: string
+  nickname: string;
+  projectId: string;
+  clientEmail: string;
+  privateKey: string;
+  databaseURL: string;
 }
 
 export function FirestoreConfig({
@@ -40,50 +40,50 @@ export function FirestoreConfig({
   existingDatabases,
 }: FirestoreConfigProps) {
   const [formData, setFormData] = useState<FirestoreConfigInterface>({
-    nickname: '',
-    projectId: '',
-    clientEmail: '',
-    privateKey: '',
-    databaseURL: '',
-  })
+    nickname: "",
+    projectId: "",
+    clientEmail: "",
+    privateKey: "",
+    databaseURL: "",
+  });
 
   const [connectionStatus, setConnectionStatus] = useState<
-    'idle' | 'testing' | 'success' | 'error'
-  >('idle')
-  const [connectionError, setConnectionError] = useState('')
-  const [collections, setCollections] = useState<string[]>([])
-  const [isFirestoreHelpOpen, setFirestoreHelpOpen] = useState(false)
+    "idle" | "testing" | "success" | "error"
+  >("idle");
+  const [connectionError, setConnectionError] = useState("");
+  const [collections, setCollections] = useState<string[]>([]);
+  const [isFirestoreHelpOpen, setFirestoreHelpOpen] = useState(false);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
+    });
 
     // Reset connection status when configuration changes
-    if (connectionStatus !== 'idle') {
-      setConnectionStatus('idle')
-      setCollections([])
+    if (connectionStatus !== "idle") {
+      setConnectionStatus("idle");
+      setCollections([]);
       // reset to false so user needs to test connection again
-      onConnectionTested(false, formData)
+      onConnectionTested(false, formData);
     }
-  }
+  };
 
   const sanitizeForm = (
-    d: FirestoreConfigInterface,
+    d: FirestoreConfigInterface
   ): FirestoreConfigInterface => ({
     nickname: d.nickname.trim(),
     projectId: d.projectId.trim(),
     clientEmail: d.clientEmail.trim(),
     privateKey: d.privateKey.trim(),
     databaseURL: d.databaseURL.trim(),
-  })
+  });
 
   const testConnection = async () => {
-    const clean = sanitizeForm(formData)
+    const clean = sanitizeForm(formData);
 
     if (
       !clean.nickname ||
@@ -91,65 +91,65 @@ export function FirestoreConfig({
       !clean.clientEmail ||
       !clean.privateKey
     ) {
-      setConnectionStatus('error')
+      setConnectionStatus("error");
       setConnectionError(
-        'Please fill all required fields (spaces only were removed).',
-      )
-      onConnectionTested(false, clean)
-      return
+        "Please fill all required fields (spaces only were removed)."
+      );
+      onConnectionTested(false, clean);
+      return;
     }
 
     // use trimmed nickname for dup check
     if (!checkNicknameDup(existingDatabases, clean.nickname)) {
-      return
+      return;
     }
 
-    setConnectionStatus('testing')
-    setConnectionError('')
-    setCollections([])
+    setConnectionStatus("testing");
+    setConnectionError("");
+    setCollections([]);
 
     try {
-      const response = await fetch('/api/test-connection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          databaseType: 'firestore',
+          databaseType: "firestore",
           config: clean,
         }),
-      })
+      });
 
       if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`)
+        throw new Error(`HTTP error! Status: ${response.status}`);
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        setConnectionStatus('success')
-        if (result.collections) setCollections(result.collections)
-        onConnectionTested(true, clean) // report trimmed values
+        setConnectionStatus("success");
+        if (result.collections) setCollections(result.collections);
+        onConnectionTested(true, clean); // report trimmed values
       } else {
-        setConnectionStatus('error')
-        setConnectionError(result.message)
-        onConnectionTested(false, clean)
+        setConnectionStatus("error");
+        setConnectionError(result.message);
+        onConnectionTested(false, clean);
       }
     } catch (error: any) {
-      console.error('Error testing connection:', error)
-      setConnectionStatus('error')
-      setConnectionError(`Connection test failed: ${error.message}`)
-      onConnectionTested(false, clean)
+      console.error("Error testing connection:", error);
+      setConnectionStatus("error");
+      setConnectionError(`Connection test failed: ${error.message}`);
+      onConnectionTested(false, clean);
     }
-  }
+  };
 
   const renderConnectionStatus = () => {
     switch (connectionStatus) {
-      case 'testing':
+      case "testing":
         return (
           <div className="flex items-center space-x-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span>Testing connection...</span>
           </div>
-        )
-      case 'success':
+        );
+      case "success":
         return (
           <div className="space-y-4">
             <div className="flex items-center space-x-2 text-green-600">
@@ -171,30 +171,30 @@ export function FirestoreConfig({
               </div>
             )}
           </div>
-        )
-      case 'error':
+        );
+      case "error":
         return (
           <Alert variant="destructive" className="mt-4">
             <XCircle className="h-4 w-4" />
             <AlertDescription>
               {connectionError ||
-                'Failed to connect to database. Please check your credentials.'}
+                "Failed to connect to database. Please check your credentials."}
             </AlertDescription>
           </Alert>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const isValid = () => {
     return Boolean(
       formData.nickname &&
         formData.projectId &&
         formData.clientEmail &&
-        formData.privateKey,
-    )
-  }
+        formData.privateKey
+    );
+  };
 
   return (
     <div className="space-y-6 mt-8 border-t pt-6">
@@ -229,25 +229,25 @@ export function FirestoreConfig({
               select your project.
             </li>
             <li>
-              Click the{' '}
+              Click the{" "}
               <span className="font-medium">gear icon → Project settings</span>.
             </li>
             <li>
-              Go to the <span className="font-medium">Service accounts</span>{' '}
+              Go to the <span className="font-medium">Service accounts</span>{" "}
               tab.
             </li>
             <li>
               Under <span className="font-medium">Firebase Admin SDK</span>,
               click
               <span className="font-medium">
-                {' '}
+                {" "}
                 “Generate new private key”
-              </span>{' '}
+              </span>{" "}
               to download the JSON.
             </li>
             <li>
-              In this form, use values from that JSON (e.g.{' '}
-              <code>project_id</code>,<code> client_email</code>,{' '}
+              In this form, use values from that JSON (e.g.{" "}
+              <code>project_id</code>,<code> client_email</code>,{" "}
               <code> private_key</code>).
             </li>
           </ol>
@@ -335,21 +335,21 @@ export function FirestoreConfig({
           <Button
             type="button"
             onClick={testConnection}
-            disabled={connectionStatus === 'testing' || !isValid()}
+            disabled={connectionStatus === "testing" || !isValid()}
             className="w-full md:w-auto"
           >
-            {connectionStatus === 'testing' && (
+            {connectionStatus === "testing" && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            {connectionStatus === 'success'
-              ? 'Test Again'
-              : connectionStatus === 'testing'
-                ? 'Testing...'
-                : 'Test Connection'}
+            {connectionStatus === "success"
+              ? "Test Again"
+              : connectionStatus === "testing"
+                ? "Testing..."
+                : "Test Connection"}
           </Button>
           {renderConnectionStatus()}
         </div>
       </div>
     </div>
-  )
+  );
 }

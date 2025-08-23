@@ -89,6 +89,17 @@ export default function ChatLeftPanel() {
     (state) => state.global_code_artifact
   );
 
+  async function SyncSheetDataToFirestore() {
+    const sheetId = "1yVvXGXtjYjaJSgQUIhwfB-P2apEJrKbMTezn3JOQbmc";
+    const res = await fetch(`/api/sheets?sheetId=${sheetId}`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch sheet data");
+    }
+    const data = await res.json();
+    console.log("ZUDAO:", data);
+    return data;
+  }
+
   // ========================= local states ===============================
 
   const [chatInput, setChatInput] = useLocalStorage("chat", "");
@@ -372,6 +383,12 @@ export default function ChatLeftPanel() {
           <span className="ml-2 text-lg font-semibold">
             {current_tool?.name}
           </span>
+          <button
+            className="ml-2 text-lg font-semibold"
+            onClick={SyncSheetDataToFirestore}
+          >
+            Sync Sheet to firestore
+          </button>
         </div>
       </div>
       <Chat
