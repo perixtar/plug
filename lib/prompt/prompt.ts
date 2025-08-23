@@ -525,7 +525,6 @@ Follow these steps:
 - Always generate responsive designs.
 - Beautiful designs are your top priority, so make sure to edit the index.css and tailwind.config.ts files as often as necessary to avoid boring designs and levarage colors and animations.
 - Pay attention to dark vs light mode styles of components. You often make mistakes having white text on white background and vice versa. You should make sure to use the correct styles for each mode.
-- **CRITICAL**: Make sure you finish generating code otherwise the user will be dead.
 
 ## Follow these key principles:
 - Add "use client" if you need to use hooks.

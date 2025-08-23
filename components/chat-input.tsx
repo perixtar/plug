@@ -20,14 +20,16 @@ import {
 } from "lucide-react";
 import { SetStateAction, useEffect, useMemo, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
+// 🔄 Swap dropdown imports → dialog imports
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 interface ChatInputProps {
   retry: () => void;
@@ -246,12 +248,12 @@ export function ChatInput({
             />
 
             <div className="flex items-center flex-1 gap-2">
-              {/* Plus button with dropdown */}
-              <DropdownMenu>
+              {/* Plus button with dialog */}
+              <Dialog>
                 <TooltipProvider>
                   <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
+                      <DialogTrigger asChild>
                         <Button
                           type="button"
                           variant="outline"
@@ -260,45 +262,58 @@ export function ChatInput({
                         >
                           <Plus className="h-5 w-5" />
                         </Button>
-                      </DropdownMenuTrigger>
+                      </DialogTrigger>
                     </TooltipTrigger>
                     <TooltipContent>Add Datasources</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
 
-                <DropdownMenuContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={8}
-                  className="w-64 rounded-2xl p-2"
-                >
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem
-                      className="gap-3"
-                      onSelect={() => addSource("files")}
-                    >
-                      <Paperclip className="h-4 w-4" />
-                      Excel Sheet (client_leads.csv)
-                    </DropdownMenuItem>
+                <DialogContent className="rounded-2xl p-0">
+                  <DialogHeader className="px-4 pt-4">
+                    <DialogTitle>Add datasources</DialogTitle>
+                    <DialogDescription>
+                      Choose one or more sources to include.
+                    </DialogDescription>
+                  </DialogHeader>
 
-                    <DropdownMenuItem
-                      className="gap-3"
-                      onSelect={() => addSource("db")}
-                    >
-                      <Database className="h-4 w-4" />
-                      Company Database
-                    </DropdownMenuItem>
+                  <div className="p-2">
+                    <ul className="grid gap-1">
+                      <DialogClose asChild>
+                        <button
+                          type="button"
+                          onClick={() => addSource("files")}
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 hover:bg-muted"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                          <span>Excel Sheet (client_leads.csv)</span>
+                        </button>
+                      </DialogClose>
 
-                    <DropdownMenuItem
-                      className="gap-3"
-                      onSelect={() => addSource("web")}
-                    >
-                      <Globe className="h-4 w-4" />
-                      Web Search
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <DialogClose asChild>
+                        <button
+                          type="button"
+                          onClick={() => addSource("db")}
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 hover:bg-muted"
+                        >
+                          <Database className="h-4 w-4" />
+                          <span>Company Database</span>
+                        </button>
+                      </DialogClose>
+
+                      <DialogClose asChild>
+                        <button
+                          type="button"
+                          onClick={() => addSource("web")}
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 hover:bg-muted"
+                        >
+                          <Globe className="h-4 w-4" />
+                          <span>Web Search</span>
+                        </button>
+                      </DialogClose>
+                    </ul>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* Divider appears only when something is selected */}
               {selectedSources.length > 0 && (
