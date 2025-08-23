@@ -1,10 +1,9 @@
-'use server'
+"use server";
 
-import { createPrismaServerClient } from '@/clients/prisma-server-client'
-import { ToolNotFoundException } from '@/exceptions/tool-not-found'
-import { tool, workspace_database } from '@/lib/generated/prisma'
+import { createPrismaServerClient } from "@/clients/prisma-server-client";
+import { tool, workspace_database } from "@/lib/generated/prisma";
 
-const prisma = createPrismaServerClient()
+const prisma = createPrismaServerClient();
 
 export async function getTools(workspace_id: string): Promise<tool[]> {
   const tools = await prisma.tool.findMany({
@@ -12,33 +11,34 @@ export async function getTools(workspace_id: string): Promise<tool[]> {
       workspace_id: workspace_id,
     },
     orderBy: {
-      created_at: 'desc',
+      created_at: "desc",
     },
-  })
+  });
 
-  return tools
+  return tools;
 }
 
 export async function getTool(tool_id: string): Promise<tool> {
-  console.log(`Fetching tool with ID: ${tool_id}`)
+  console.log(`Fetching tool with ID: ${tool_id}`);
 
   try {
     const tool = await prisma.tool.findUnique({
       where: {
         id: tool_id,
       },
-    })
+    });
     if (!tool) {
-      throw new ToolNotFoundException(tool_id)
+      throw new Error("Tool not found");
     }
-    return tool
+    return tool;
   } catch (error) {
-    throw new ToolNotFoundException(tool_id, error)
+    console.error(`Error fetching tool with ID ${tool_id}:`, error);
+    throw error;
   }
 }
 
 export async function getDatabaseFromTool(
-  tool_id: string,
+  tool_id: string
 ): Promise<workspace_database | undefined> {
   const tool = await prisma.tool.findUnique({
     where: {
@@ -47,21 +47,21 @@ export async function getDatabaseFromTool(
     select: {
       database_id: true,
     },
-  })
+  });
 
   if (!tool || !tool.database_id) {
-    return undefined
+    return undefined;
   }
 
   const database = await prisma.workspace_database.findUnique({
     where: {
       id: tool.database_id,
     },
-  })
+  });
 
   if (!database) {
-    return undefined
+    return undefined;
   }
 
-  return database
+  return database;
 }
