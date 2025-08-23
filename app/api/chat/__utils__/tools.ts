@@ -82,7 +82,7 @@ export function createWebSearchTool({ enabled }: { enabled: boolean }) {
       return results.map((r) => ({
         title: r.title,
         url: r.url,
-        content: r.text.slice(0, 1000),
+        content: r.text.slice(0, 2000),
         publishedDate: r.publishedDate,
       }));
     },
