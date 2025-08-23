@@ -1,6 +1,6 @@
 "use client";
 
-// import { checkDeploymentStatus } from "@/app/actions/vercel/deploy";
+import { checkDeploymentStatus } from "@/app/actions/vercel/deploy";
 import { useToolMessageStore } from "@/app/store/tool-message-store";
 import { useToolViewStore } from "@/app/store/tool-view-store";
 import { Button } from "@/components/ui/button";
@@ -79,19 +79,19 @@ export function CodeArtifactWebview() {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  //   // Periodically check if the Vercel deployment is ready
-  //   useEffect(() => {
-  //     async function checkVercelDeploymentReadiness() {
-  //       if (!deploymentResult) return
-  //       const status = await checkDeploymentStatus(
-  //         deploymentResult.vercelDeploymentId,
-  //       )
-  //       if (status === GetDeploymentResponseBodyStatus.Ready) {
-  //         setPersistentDeploymentUrl(deploymentResult.vercelPreviewUrl)
-  //       }
-  //     }
-  //     checkVercelDeploymentReadiness()
-  //   }, [deploymentResult])
+  // Periodically check if the Vercel deployment is ready
+  useEffect(() => {
+    async function checkVercelDeploymentReadiness() {
+      if (!deploymentResult) return;
+      const status = await checkDeploymentStatus(
+        deploymentResult.vercelDeploymentId
+      );
+      if (status === GetDeploymentResponseBodyStatus.Ready) {
+        setPersistentDeploymentUrl(deploymentResult.vercelPreviewUrl);
+      }
+    }
+    checkVercelDeploymentReadiness();
+  }, [deploymentResult]);
 
   // Show overlay if there is an error OR we're currently on the logs panel
   const showOverlay = useMemo(

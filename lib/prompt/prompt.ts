@@ -101,6 +101,7 @@ You follow these key principles:
    - Use shadcn/ui components when possible
    - Follow atomic design principles
    - Ensure proper file organization
+   - Do not import libary that is not compatible with the current React version
 3. State Management:
    - Use React Query for server state
    - Implement local state with useState/useContext

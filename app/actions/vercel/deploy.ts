@@ -1,19 +1,19 @@
 "use server";
 
-// import { addEnvVariablesToVercelProject, createAndGetProject } from ".";
+import { addEnvVariablesToVercelProject, createAndGetProject } from ".";
 import {
   cleanLocallySavedFiles,
   downloadFilesFromSandbox,
   getProjectDownloadDir,
   runCodeAndCommandsInSandbox,
 } from "../e2b";
-// import { decryptConfig } from "@/lib/encryption";
+import { decryptConfig } from "@/lib/encryption";
 import { TemplateId, workspace_database } from "@/lib/generated/prisma";
 import { CodeArtifact } from "@/lib/schema";
 import { DeploymentResult } from "@/lib/types";
-// import { DbType } from "@/types/database-type";
+import { DbType } from "@/types/database-type";
 import { Vercel } from "@vercel/sdk";
-// import { GetDeploymentResponseBodyStatus } from "@vercel/sdk/models/getdeploymentop.js";
+import { GetDeploymentResponseBodyStatus } from "@vercel/sdk/models/getdeploymentop.js";
 import { createHash } from "crypto";
 import fs from "fs/promises";
 import path from "path";
@@ -70,60 +70,60 @@ export async function deployThroughFiles(
       projectPath
     );
 
-    // console.log(`\n🚀 Deploying ${files.length} files to Vercel...`);
-    // const project = await createAndGetProject(projectName);
+    console.log(`\n🚀 Deploying ${files.length} files to Vercel...`);
+    const project = await createAndGetProject(projectName);
 
-    // const deployment = await vercel.deployments.createDeployment({
-    //   skipAutoDetectionConfirmation: "1",
-    //   requestBody: {
-    //     name: projectName,
-    //     target: "production",
-    //     project: project.id,
-    //     files: files,
-    //     deploymentId: deploymentId,
-    //     projectSettings: {
-    //       framework: "nextjs",
-    //       buildCommand: "npm run build",
-    //       devCommand: "npm run dev",
-    //       installCommand: "npm install",
-    //       outputDirectory: ".next",
-    //     },
-    //     meta: {
-    //       projectName: projectName,
-    //       deployedFrom: "local-files",
-    //       totalFiles: files.length.toString(),
-    //       deploymentTime: new Date().toISOString(),
-    //     },
-    //   },
-    // });
+    const deployment = await vercel.deployments.createDeployment({
+      skipAutoDetectionConfirmation: "1",
+      requestBody: {
+        name: projectName,
+        target: "production",
+        project: project.id,
+        files: files,
+        deploymentId: deploymentId,
+        projectSettings: {
+          framework: "nextjs",
+          buildCommand: "npm run build",
+          devCommand: "npm run dev",
+          installCommand: "npm install",
+          outputDirectory: ".next",
+        },
+        meta: {
+          projectName: projectName,
+          deployedFrom: "local-files",
+          totalFiles: files.length.toString(),
+          deploymentTime: new Date().toISOString(),
+        },
+      },
+    });
 
-    // // create project env variables
-    // const encryptedCred = toolDb.credential_zipped;
-    // if (encryptedCred) {
-    //   const dbConfig = await decryptConfig(DbType.Firestore, encryptedCred);
-    //   if (dbConfig.type == DbType.Firestore) {
-    //     await addEnvVariablesToVercelProject(
-    //       {
-    //         FIREBASE_PROJECT_ID: dbConfig.config.projectId,
-    //         FIREBASE_ADMIN_CLIENT_EMAIL: dbConfig.config.clientEmail,
-    //         FIREBASE_ADMIN_PRIVATE_KEY: dbConfig.config.privateKey,
-    //         NEXT_PUBLIC_APP_URL: deployment.url,
-    //       },
-    //       project.id
-    //     );
-    //   }
-    //     }
+    // create project env variables
+    const encryptedCred = toolDbs[0].credential_zipped;
+    if (encryptedCred) {
+      const dbConfig = await decryptConfig(DbType.Firestore, encryptedCred);
+      if (dbConfig.type == DbType.Firestore) {
+        await addEnvVariablesToVercelProject(
+          {
+            FIREBASE_PROJECT_ID: dbConfig.config.projectId,
+            FIREBASE_ADMIN_CLIENT_EMAIL: dbConfig.config.clientEmail,
+            FIREBASE_ADMIN_PRIVATE_KEY: dbConfig.config.privateKey,
+            NEXT_PUBLIC_APP_URL: deployment.url,
+          },
+          project.id
+        );
+      }
+    }
 
-    //     console.log("\n🎉 Deployment successful!");
-    //     console.log("🔗 URL:", deployment.url);
-    //     console.log("📋 ID:", deployment.id);
-    //     console.log("📊 Files deployed:", files.length);
+    console.log("\n🎉 Deployment successful!");
+    console.log("🔗 URL:", deployment.url);
+    console.log("📋 ID:", deployment.id);
+    console.log("📊 Files deployed:", files.length);
 
     return {
       sbxId: sandboxId,
       sbxUrl: sandboxResult.sandboxUrl,
-      vercelDeploymentId: sandboxId, // NOT RELEVANT FOR DEMO
-      vercelPreviewUrl: sandboxResult.sandboxUrl,
+      vercelDeploymentId: deployment.id,
+      vercelPreviewUrl: deployment.url,
     };
   } catch (error) {
     console.error("\n❌ Deployment failed:", error);
@@ -131,35 +131,35 @@ export async function deployThroughFiles(
   }
 }
 
-// export async function checkDeploymentStatus(deploymentId: string) {
-//   try {
-//     let status: GetDeploymentResponseBodyStatus;
-//     do {
-//       // Fetch the latest deployment info
-//       const { status: currentStatus } = await vercel.deployments.getDeployment({
-//         idOrUrl: deploymentId,
-//         withGitRepoInfo: "true",
-//       });
-//       status = currentStatus;
-//       console.log(`Deployment status: ${status}`);
+export async function checkDeploymentStatus(deploymentId: string) {
+  try {
+    let status: GetDeploymentResponseBodyStatus;
+    do {
+      // Fetch the latest deployment info
+      const { status: currentStatus } = await vercel.deployments.getDeployment({
+        idOrUrl: deploymentId,
+        withGitRepoInfo: "true",
+      });
+      status = currentStatus;
+      console.log(`Deployment status: ${status}`);
 
-//       // If still building or initializing or queued, wait and retry
-//       if (
-//         status === "INITIALIZING" ||
-//         status === "BUILDING" ||
-//         status === "QUEUED"
-//       ) {
-//         await new Promise((r) => setTimeout(r, 5000));
-//       } else {
-//         break;
-//       }
-//     } while (true);
-//     return status;
-//   } catch (error) {
-//     console.error("❌ Error fetching deployment status:", error);
-//     throw error;
-//   }
-// }
+      // If still building or initializing or queued, wait and retry
+      if (
+        status === "INITIALIZING" ||
+        status === "BUILDING" ||
+        status === "QUEUED"
+      ) {
+        await new Promise((r) => setTimeout(r, 5000));
+      } else {
+        break;
+      }
+    } while (true);
+    return status;
+  } catch (error) {
+    console.error("❌ Error fetching deployment status:", error);
+    throw error;
+  }
+}
 
 export async function parseGitignore(gitignorePath: string): Promise<string[]> {
   try {
