@@ -325,7 +325,6 @@ File Structure
 │       └── tooltip.tsx
 ├── config/
 │   └── firebase-admin-config.ts
-|   └── excel-firebase-admin-config.ts
 ├── hooks/
 │   └── use-mobile.tsx
 ├── lib/
@@ -452,8 +451,6 @@ export default function Home() {
 ## Important Files
 config/firebase-admin-config.ts
 \`\`\`
-// app/config/firebase-admin.ts
-// Place in a *server-only* module (Node runtime; not Edge).
 import "server-only";
 import { App, getApp, getApps, initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
@@ -646,10 +643,6 @@ ${
           (databaseSchema, index) => `
   Database Schema ${index + 1}:
     ${JSON.stringify(databaseSchema, null, 2)}
-  The associated env variables to connect to this database are:
-    ${databaseConnectionEnvs[index].join(", ")}
-  The corresponding database config file is:
-    ${index == 0 ? "config/firebase-admin-config.ts" : "config/excel-firebase-admin-config.ts"}
         `
         )
         .join("\n\n")
