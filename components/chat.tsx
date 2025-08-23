@@ -148,7 +148,11 @@ export function Chat({
               <div className="space-y-3 text-[0.9rem] leading-7">
                 {message.content.map((content, id) => {
                   if (content.type === "text") {
-                    return <p key={id}>{content.text}</p>;
+                    return (
+                      <p key={id} className="whitespace-pre-line">
+                        {content.text}
+                      </p>
+                    );
                   }
                   if (content.type === "image") {
                     return (
