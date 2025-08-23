@@ -2,7 +2,6 @@
 
 import { joinCoreMessages } from "./chat-utils";
 import {
-  firestoreSystemPrompt,
   toPromptPageInference,
   withoutDBSystemPrompt,
   toPromptSelectRelevantColl,
@@ -94,43 +93,6 @@ async function getTableSamples(
   }
 
   return selected_samples;
-}
-
-export async function getDbSpecificSystemPrompt(
-  messages: CoreMessage[],
-  template: Templates,
-  prevPageNames: string[],
-  tableSample: Record<string, any[]>,
-  dbType: DbType,
-  modelClient: LanguageModel
-): Promise<string> {
-  // infer the page we are creating
-  const page = await pageNameInference(messages, prevPageNames, modelClient);
-
-  // 1. Extract db tables relevant to the user query
-  let prompt;
-  let selectedTables: string[] = [];
-  if (dbType == DbType.Firestore) {
-    // based on the msgs, determine what db collections need to be used
-    const dbTables = Object.keys(tableSample);
-    selectedTables = await selectRelevantCollections(
-      dbTables,
-      messages,
-      modelClient as LanguageModel,
-      page
-    );
-  }
-
-  if (dbType == DbType.None || selectedTables.length == 0) {
-    prompt = withoutDBSystemPrompt(page, template);
-  } else if (dbType == DbType.Firestore) {
-    // 2. Get sample docs from each of those tables
-    const tableSamples = await getTableSamples(tableSample, selectedTables);
-    prompt = firestoreSystemPrompt(page, template, tableSamples);
-  } else {
-    throw "unsupported db type";
-  }
-  return prompt;
 }
 
 export async function getFirestoreCollectionDescriptions(
