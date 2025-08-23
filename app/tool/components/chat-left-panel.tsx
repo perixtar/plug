@@ -88,7 +88,7 @@ export default function ChatLeftPanel() {
   );
 
   async function SyncSheetDataToFirestore() {
-    const sheetId = "1yVvXGXtjYjaJSgQUIhwfB-P2apEJrKbMTezn3JOQbmc";
+    const sheetId = "1-Ww0YpkTgzlLrTrEwidbrvO2QFPfNZbCNPRhLo8xPJ0";
     const res = await fetch(`/api/sheets?sheetId=${sheetId}`);
     if (!res.ok) {
       throw new Error("Failed to fetch sheet data");
@@ -189,12 +189,9 @@ export default function ChatLeftPanel() {
     try {
       setCurrentTab(ToolViewTab.PREVIEW);
       setIsPreviewLoading(false);
-      const excelToolDb = await getWorkspaceDatabase(
-        "8eef4a77-6a46-4886-ae1d-f05f29112ddf"
-      );
       const deploymentResult = await deployThroughFiles(
         mergedCodeArtifact,
-        [tool_db!, excelToolDb!],
+        [tool_db!],
         user!.id,
         current_tool.id,
         TemplateId.nextjs15_v1
@@ -383,12 +380,12 @@ export default function ChatLeftPanel() {
           <span className="ml-2 text-lg font-semibold">
             {current_tool?.name}
           </span>
-          <button
+          {/* <button
             className="ml-2 text-lg font-semibold"
             onClick={SyncSheetDataToFirestore}
           >
             Sync Sheet to firestore
-          </button>
+          </button> */}
         </div>
       </div>
       <Chat

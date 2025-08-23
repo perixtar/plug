@@ -55,7 +55,7 @@ export async function runCodeAndCommandsInSandbox(
     console.log("ready to copy env file to sandbox", sbx.sandboxId);
     if (encryptedCred) {
       const dbConfig = await decryptConfig(DbType.Firestore, encryptedCred);
-      await copyEnvFileToSandbox(sbx, dbConfig, toolDb.connection_envs);
+      await copyEnvFileToSandbox(sbx, dbConfig);
     }
   }
 

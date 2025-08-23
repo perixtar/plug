@@ -8,7 +8,6 @@ import { CodeArtifact } from "@/lib/schema";
 import { CodeTemplate } from "@/types/code-template";
 import { LanguageModel, CoreMessage } from "ai";
 import { NextResponse } from "next/server";
-import { getWorkspaceDatabase } from "@/app/actions/workspace/workspace-databases";
 
 export const maxDuration = 60;
 
@@ -37,15 +36,6 @@ export async function POST(req: Request) {
     databaseConnectionEnvs.push(database?.connection_envs);
   }
 
-  const excelToolDb = await getWorkspaceDatabase(
-    "8eef4a77-6a46-4886-ae1d-f05f29112ddf"
-  );
-
-  if (excelToolDb) {
-    databaseSamples.push(excelToolDb?.table_sample);
-    databaseConnectionEnvs.push(excelToolDb?.connection_envs);
-  }
-
   const genCode = await runUserIntentAgent(
     messages,
     template,
@@ -56,6 +46,7 @@ export async function POST(req: Request) {
 
   console.log("Generated Code:", genCode);
   if (isQAResponse(genCode)) {
+    console.log("IS QA Response");
     const codeArtifact = {
       commentary: genCode,
     } as CodeArtifact;

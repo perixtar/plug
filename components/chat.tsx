@@ -220,7 +220,7 @@ export function Chat({
             >
               <Sparkles className="h-3.5 w-3.5 text-white" />
             </span>
-            <span className="font-medium text-foreground">Toolmind</span>
+            <span className="font-medium text-foreground">Plug</span>
             <span className="text-muted-foreground/60">•</span>
             <Lightbulb className="h-4 w-4" />
             <span>Thinking</span>
