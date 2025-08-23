@@ -325,6 +325,7 @@ File Structure
 │       └── tooltip.tsx
 ├── config/
 │   └── firebase-admin-config.ts
+|   └── excel-firebase-admin-config.ts
 ├── hooks/
 │   └── use-mobile.tsx
 ├── lib/
@@ -469,6 +470,29 @@ export function initFirebaseAdminSDK() {
 }
 \`\`\`
 
+config/excel-firebase-admin-config.ts
+\`\`\`
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+
+const firebaseAdminConfig = {
+  credential: cert({
+    projectId: process.env.EXCEL_FIREBASE_PROJECT_ID!,
+    clientEmail: process.env.EXCEL_FIREBASE_ADMIN_CLIENT_EMAIL!,
+    privateKey: process.env.EXCEL_FIREBASE_ADMIN_PRIVATE_KEY!.replace(
+      /\\n/g,
+      "\n"
+    ),
+  }),
+  storageBucket: process.env.EXCEL_FIREBASE_STORAGE_BUCKET!,
+};
+
+export function initExcelFirebaseAdminSDK() {
+  if (getApps().length <= 0) {
+    return initializeApp(firebaseAdminConfig);
+  }
+}
+\`\`\`
+
 app/layout.tsx
 \`\`\`
 import PostHogProviderWrapper from './PostHogProviderWrapper'
@@ -506,6 +530,7 @@ tailwind.config.ts
 tsconfig.json
 PostHogProviderWrapper.tsx
 firebase-admin-config.ts
+excel-firebase-admin-config.ts
 accordion.tsx
 alert-dialog.tsx
 alert.tsx
@@ -615,10 +640,12 @@ ${
     ? databaseSchemas
         .map(
           (databaseSchema, index) => `
-      Database Schema ${index + 1}:
-        ${JSON.stringify(databaseSchema, null, 2)}
-      The associated env variables to connect to this database are:
-        ${databaseConnectionEnvs[index].join(", ")}
+  Database Schema ${index + 1}:
+    ${JSON.stringify(databaseSchema, null, 2)}
+  The associated env variables to connect to this database are:
+    ${databaseConnectionEnvs[index].join(", ")}
+  The corresponding database config file is:
+    ${index == 0 ? "config/firebase-admin-config.ts" : "config/excel-firebase-admin-config.ts"}
         `
         )
         .join("\n\n")
