@@ -1,29 +1,29 @@
-import { getAppStartData } from './actions/app-start'
-import './globals.css'
+import { getAppStartData } from "./actions/app-start";
+import "./globals.css";
 import {
   AppStartDataProvider,
   PostHogProvider,
   ThemeProvider,
-} from './providers'
-import { Toaster } from '@/components/ui/toaster'
-import { Analytics } from '@vercel/analytics/next'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+} from "./providers";
+import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/next";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Toolmind AI',
+  title: "Plug",
   description: "Open-source version of Anthropic's Artifacts",
-}
+};
 
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   // initialize data on app start
-  const app_start_data = await getAppStartData()
+  const app_start_data = await getAppStartData();
   // const profile = await getCurrentUserProfile()
   // if (profile?.onboarding_status === OnboardingStatus.NOT_STARTED) {
   //   // redirect to onboarding
@@ -48,5 +48,5 @@ export default async function RootLayout({
         </PostHogProvider>
       </body>
     </html>
-  )
+  );
 }
