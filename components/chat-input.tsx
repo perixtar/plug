@@ -9,9 +9,25 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { isFileInArray } from "@/lib/utils";
-import { ArrowUp, Paperclip, Square, X } from "lucide-react";
+import {
+  ArrowUp,
+  Database,
+  Globe,
+  Paperclip,
+  Plus,
+  Square,
+  X,
+} from "lucide-react";
 import { SetStateAction, useEffect, useMemo, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+} from "@/components/ui/dropdown-menu";
 
 interface ChatInputProps {
   retry: () => void;
@@ -29,6 +45,17 @@ interface ChatInputProps {
   children: React.ReactNode;
   remainingCredits?: number;
 }
+
+type DataSourceKey = "files" | "db" | "web";
+
+const SOURCE_META: Record<
+  DataSourceKey,
+  { label: string; Icon: React.ComponentType<{ className?: string }> }
+> = {
+  files: { label: "Files", Icon: Paperclip },
+  db: { label: "Database", Icon: Database },
+  web: { label: "Research", Icon: Globe }, // label matches screenshot
+};
 
 export function ChatInput({
   retry,
@@ -149,6 +176,14 @@ export function ChatInput({
     }
   }, [isMultiModal]);
 
+  // --- UI-only: selected data sources shown as chips next to the plus button ---
+  const [selectedSources, setSelectedSources] = useState<DataSourceKey[]>([]);
+  const addSource = (key: DataSourceKey) =>
+    setSelectedSources((prev) => (prev.includes(key) ? prev : [...prev, key]));
+  const removeSource = (key: DataSourceKey) =>
+    setSelectedSources((prev) => prev.filter((k) => k !== key));
+  // -----------------------------------------------------------------------------
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -209,30 +244,87 @@ export function ChatInput({
               className="hidden"
               onChange={handleFileInput}
             />
-            {/* comment out for now since we don't need attachment */}
-            {/* <div className="flex items-center flex-1 gap-2">
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      disabled={!isMultiModal || isErrored}
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="rounded-xl h-10 w-10"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        document.getElementById('multimodal')?.click()
-                      }}
+
+            <div className="flex items-center flex-1 gap-2">
+              {/* Plus button with dropdown */}
+              <DropdownMenu>
+                <TooltipProvider>
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="rounded-xl h-10 w-10"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Add Datasources</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <DropdownMenuContent
+                  side="bottom"
+                  align="start"
+                  sideOffset={8}
+                  className="w-64 rounded-2xl p-2"
+                >
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      className="gap-3"
+                      onSelect={() => addSource("files")}
                     >
-                      <Paperclip className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Add attachments</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {files.length > 0 && filePreview}
-            </div> */}
+                      <Paperclip className="h-4 w-4" />
+                      Excel Sheet (Sales Data.csv)
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="gap-3"
+                      onSelect={() => addSource("db")}
+                    >
+                      <Database className="h-4 w-4" />
+                      Company Database
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="gap-3"
+                      onSelect={() => addSource("web")}
+                    >
+                      <Globe className="h-4 w-4" />
+                      Web Search
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Divider appears only when something is selected */}
+              {selectedSources.length > 0 && (
+                <span className="mx-1 h-5 w-px bg-border" />
+              )}
+
+              {/* Selected chips */}
+              <div className="flex flex-wrap items-center gap-1">
+                {selectedSources.map((key) => {
+                  const { label, Icon } = SOURCE_META[key];
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => removeSource(key)}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-primary hover:bg-primary/10 transition"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="leading-none">{label}</span>
+                      <X className="h-3 w-3 opacity-70" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="ml-auto">
               {!isLoading ? (
                 <TooltipProvider>
