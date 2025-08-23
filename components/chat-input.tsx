@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { FREE_TIER_MAX_MSG_PER_DAY } from '@/app/store/stripe-customer-store'
-import { Button } from '@/components/ui/button'
+import { FREE_TIER_MAX_MSG_PER_DAY } from "@/app/store/stripe-customer-store";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { isFileInArray } from '@/lib/utils'
-import { ArrowUp, Paperclip, Square, X } from 'lucide-react'
-import { SetStateAction, useEffect, useMemo, useState } from 'react'
-import TextareaAutosize from 'react-textarea-autosize'
+} from "@/components/ui/tooltip";
+import { isFileInArray } from "@/lib/utils";
+import { ArrowUp, Paperclip, Square, X } from "lucide-react";
+import { SetStateAction, useEffect, useMemo, useState } from "react";
+import TextareaAutosize from "react-textarea-autosize";
 
 interface ChatInputProps {
-  retry: () => void
-  isErrored: boolean
-  errorMessage: string
-  isLoading: boolean
-  isRateLimited: boolean
-  stop: () => void
-  input: string
-  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void
-  isMultiModal: boolean
-  files?: File[]
-  handleFileChange?: (change: SetStateAction<File[]>) => void
-  children: React.ReactNode
-  remainingCredits?: number
+  retry: () => void;
+  isErrored: boolean;
+  errorMessage: string;
+  isLoading: boolean;
+  isRateLimited: boolean;
+  stop: () => void;
+  input: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isMultiModal: boolean;
+  files?: File[];
+  handleFileChange?: (change: SetStateAction<File[]>) => void;
+  children: React.ReactNode;
+  remainingCredits?: number;
 }
 
 export function ChatInput({
@@ -47,72 +47,72 @@ export function ChatInput({
   children,
 }: ChatInputProps) {
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!handleFileChange) return
+    if (!handleFileChange) return;
     handleFileChange((prev) => {
-      const newFiles = Array.from(e.target.files || [])
-      const uniqueFiles = newFiles.filter((file) => !isFileInArray(file, prev))
-      return [...prev, ...uniqueFiles]
-    })
+      const newFiles = Array.from(e.target.files || []);
+      const uniqueFiles = newFiles.filter((file) => !isFileInArray(file, prev));
+      return [...prev, ...uniqueFiles];
+    });
   }
 
   function handleFileRemove(file: File) {
-    if (!handleFileChange) return
-    handleFileChange((prev) => prev.filter((f) => f !== file))
+    if (!handleFileChange) return;
+    handleFileChange((prev) => prev.filter((f) => f !== file));
   }
 
   function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
-    const items = Array.from(e.clipboardData.items)
+    const items = Array.from(e.clipboardData.items);
 
     for (const item of items) {
-      if (item.type.indexOf('image') !== -1) {
-        e.preventDefault()
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
 
-        const file = item.getAsFile()
+        const file = item.getAsFile();
         if (file && handleFileChange) {
           handleFileChange((prev) => {
             if (!isFileInArray(file, prev)) {
-              return [...prev, file]
+              return [...prev, file];
             }
-            return prev
-          })
+            return prev;
+          });
         }
       }
     }
   }
 
-  const [dragActive, setDragActive] = useState(false)
+  const [dragActive, setDragActive] = useState(false);
 
   function handleDrag(e: React.DragEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true)
-    } else if (e.type === 'dragleave') {
-      setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
     }
   }
 
   function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
     const droppedFiles = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith('image/'),
-    )
+      file.type.startsWith("image/")
+    );
 
     if (droppedFiles.length > 0 && handleFileChange) {
       handleFileChange((prev) => {
         const uniqueFiles = droppedFiles.filter(
-          (file) => !isFileInArray(file, prev),
-        )
-        return [...prev, ...uniqueFiles]
-      })
+          (file) => !isFileInArray(file, prev)
+        );
+        return [...prev, ...uniqueFiles];
+      });
     }
   }
 
   const filePreview = useMemo(() => {
-    if (!files || files.length === 0) return null
+    if (!files || files.length === 0) return null;
     return Array.from(files).map((file) => {
       return (
         <div className="relative" key={file.name}>
@@ -128,26 +128,26 @@ export function ChatInput({
             className="rounded-xl w-10 h-10 object-cover"
           />
         </div>
-      )
-    })
-  }, [files])
+      );
+    });
+  }, [files]);
 
   function onEnter(e: React.KeyboardEvent<HTMLFormElement>) {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault()
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
       if (e.currentTarget.checkValidity()) {
-        handleSubmit(e)
+        handleSubmit(e);
       } else {
-        e.currentTarget.reportValidity()
+        e.currentTarget.reportValidity();
       }
     }
   }
 
   useEffect(() => {
     if (!isMultiModal && handleFileChange) {
-      handleFileChange([])
+      handleFileChange([]);
     }
-  }, [isMultiModal])
+  }, [isMultiModal]);
 
   return (
     <form
@@ -163,14 +163,14 @@ export function ChatInput({
         <div
           className={`flex items-center p-1.5 text-sm font-medium mx-4 mb-10 rounded-xl ${
             isRateLimited
-              ? 'bg-orange-400/10 text-orange-400'
-              : 'bg-red-400/10 text-red-400'
+              ? "bg-orange-400/10 text-orange-400"
+              : "bg-red-400/10 text-red-400"
           }`}
         >
           <span className="flex-1 px-1.5">{errorMessage}</span>
           <button
             className={`px-2 py-1 rounded-sm ${
-              isRateLimited ? 'bg-orange-400/20' : 'bg-red-400/20'
+              isRateLimited ? "bg-orange-400/20" : "bg-red-400/20"
             }`}
             onClick={retry}
           >
@@ -182,8 +182,8 @@ export function ChatInput({
         <div
           className={`mx-4 mt-4 mb-2 rounded-2xl relative z-10 bg-background border ${
             dragActive
-              ? 'before:absolute before:inset-0 before:rounded-2xl before:border-2 before:border-dashed before:border-primary'
-              : ''
+              ? "before:absolute before:inset-0 before:rounded-2xl before:border-2 before:border-dashed before:border-primary"
+              : ""
           }`}
         >
           <div className="flex items-center px-3 py-2 gap-1">{children}</div>
@@ -260,8 +260,8 @@ export function ChatInput({
                         size="icon"
                         className="rounded-xl h-10 w-10"
                         onClick={(e) => {
-                          e.preventDefault()
-                          stop()
+                          e.preventDefault();
+                          stop();
                         }}
                       >
                         <Square className="h-5 w-5" />
@@ -274,15 +274,7 @@ export function ChatInput({
             </div>
           </div>
         </div>
-        {/* Only display if remaining credit is less than 10 */}
-        {remainingCredits != undefined &&
-          remainingCredits <= FREE_TIER_MAX_MSG_PER_DAY && (
-            <div className="mx-4 mt-2 text-xs text-muted-foreground">
-              Remaining daily messages:{' '}
-              {typeof remainingCredits === 'number' ? remainingCredits : '—'}
-            </div>
-          )}
       </div>
     </form>
-  )
+  );
 }

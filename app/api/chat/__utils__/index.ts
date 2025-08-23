@@ -1,33 +1,48 @@
-'use server'
+"use server";
 
-import { JsonValue } from '@/lib/generated/prisma/runtime/library'
+import { JsonValue } from "@/lib/generated/prisma/runtime/library";
 import {
   buildCodingAgentSystemPrompt,
   getUserIntentSystemPrompt,
-} from '@/lib/prompt/prompt'
-import { codeArtifactSchema } from '@/lib/schema'
-import { CodeTemplate } from '@/types/code-template'
-import { LanguageModel, CoreMessage, generateText, streamObject } from 'ai'
+} from "@/lib/prompt/prompt";
+import { codeArtifactSchema } from "@/lib/schema";
+import { CodeTemplate } from "@/types/code-template";
+import { LanguageModel, CoreMessage, generateText, streamObject } from "ai";
+import { createWebSearchTool } from "./tools";
+
+type UserSettings = { webSearchEnabled: boolean };
+
+async function getUserSettings(): Promise<UserSettings> {
+  return { webSearchEnabled: true }; // default off
+}
 
 export async function runUserIntentAgent(
   messages: CoreMessage[],
   template: CodeTemplate,
   modelClient: LanguageModel,
   databaseSchema?: JsonValue,
-  projectId?: string,
+  projectId?: string
 ): Promise<string> {
+  const settings = await getUserSettings();
+  const tools: Record<string, any> = {};
+
+  if (settings.webSearchEnabled) {
+    tools.webSearch = createWebSearchTool({ enabled: true });
+  }
   const systemPrompt = getUserIntentSystemPrompt(
     template,
     projectId,
-    databaseSchema,
-  )
+    databaseSchema
+  );
   const { text } = await generateText({
     model: modelClient,
     system: systemPrompt,
+    tools,
+    maxSteps: 3,
     messages: messages,
-  })
+  });
 
-  return text
+  return text;
 }
 
 /**
@@ -41,13 +56,13 @@ export async function runCodingAgentStream(
   template: CodeTemplate,
   modelClient: LanguageModel,
   messages: CoreMessage[],
-  projectId?: string,
+  projectId?: string
 ) {
   const result = await streamObject({
     model: modelClient,
     schema: codeArtifactSchema,
     system: buildCodingAgentSystemPrompt(template, projectId),
     messages,
-  })
-  return result
+  });
+  return result;
 }

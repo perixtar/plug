@@ -1,60 +1,90 @@
-import { getDatabaseFromTool } from '@/app/actions/tool/get-tools'
-import { getAIModelById } from '@/lib/models'
-import { generateText, tool, LanguageModel } from 'ai'
-import { z } from 'zod'
+import { getDatabaseFromTool } from "@/app/actions/tool/get-tools";
+import { getAIModelById } from "@/lib/models";
+import { generateText, tool, LanguageModel } from "ai";
+import { z } from "zod";
+import Exa from "exa-js";
+
+export const exa = new Exa(process.env.EXA_API_KEY);
 
 const logToConsoleTool = tool({
-  description: 'Logs a message to the console',
+  description: "Logs a message to the console",
   parameters: z.object({
-    message: z.string().describe('The message to log to the console'),
+    message: z.string().describe("The message to log to the console"),
   }),
   execute: async ({ message }) => {
-    console.log('Tool log:', message)
-    return `Logged to console: ${message}`
+    console.log("Tool log:", message);
+    return `Logged to console: ${message}`;
   },
-})
+});
 
 const qnaTool = tool({
-  description: 'Answer question based on the provided context',
+  description: "Answer question based on the provided context",
   parameters: z.object({
-    question: z.string().describe('The question to answer'),
+    question: z.string().describe("The question to answer"),
     context: z
       .string()
       .optional()
-      .describe('Optional context to help answer the question'),
+      .describe("Optional context to help answer the question"),
   }),
   execute: async ({ question, context }) => {
-    const model = getAIModelById('claude-3-5-sonnet-latest')
+    const model = getAIModelById("claude-3-5-sonnet-latest");
     // call LLM to generate an answer based on the question
     await generateText({
       model: model as LanguageModel,
-      prompt: `Question: ${question}\nContext: ${context || ''}\nAnswer:`,
-    })
+      prompt: `Question: ${question}\nContext: ${context || ""}\nAnswer:`,
+    });
   },
-})
+});
 
 const findRelevantTables = tool({
   description:
-    'Find relevant database tables or collections based on user message',
+    "Find relevant database tables or collections based on user message",
   parameters: z.object({
-    currentProjectId: z.string().describe('Current project ID'),
-    message: z.string().describe('User message to find relevant collections'),
+    currentProjectId: z.string().describe("Current project ID"),
+    message: z.string().describe("User message to find relevant collections"),
   }),
   execute: async ({ currentProjectId, message }) => {
-    console.log('Finding relevant tables for project:', currentProjectId)
-    return await getDatabaseFromTool(currentProjectId)
+    console.log("Finding relevant tables for project:", currentProjectId);
+    return await getDatabaseFromTool(currentProjectId);
   },
-})
+});
 
 const findRelevantFiles = tool({
   description:
-    'Given a user message, find all the relevant files for the coding agent',
+    "Given a user message, find all the relevant files for the coding agent",
   parameters: z.object({
-    currentProjectId: z.string().describe('Current project ID'),
-    message: z.string().describe('User message to find relevant files'),
+    currentProjectId: z.string().describe("Current project ID"),
+    message: z.string().describe("User message to find relevant files"),
   }),
   execute: async ({ currentProjectId, message }) => {
-    const model = getAIModelById('claude-3-5-sonnet-latest')
+    const model = getAIModelById("claude-3-5-sonnet-latest");
     // call LLM to find relevant files
   },
-})
+});
+
+export function createWebSearchTool({ enabled }: { enabled: boolean }) {
+  return tool({
+    description: "Search the web for up-to-date information",
+    parameters: z.object({
+      query: z.string().min(1).max(100).describe("The search query"),
+    }),
+    execute: async ({ query }) => {
+      if (!enabled) {
+        // Hard stop: prevents accidental use if the tool is ever registered.
+        throw new Error("Web search is disabled by user settings.");
+      }
+
+      const { results } = await exa.searchAndContents(query, {
+        livecrawl: "always",
+        numResults: 3,
+      });
+
+      return results.map((r) => ({
+        title: r.title,
+        url: r.url,
+        content: r.text.slice(0, 1000),
+        publishedDate: r.publishedDate,
+      }));
+    },
+  });
+}

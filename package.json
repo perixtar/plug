@@ -53,6 +53,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "core-js": "^3.38.0",
+    "exa-js": "^1.9.1",
     "firebase": "^11.6.0",
     "firebase-admin": "^13.2.0",
     "framer-motion": "^12.23.12",

@@ -1,8 +1,8 @@
-import { Message } from '@/lib/messages'
-import { CodeArtifact } from '@/lib/schema'
-import { DeploymentResult } from '@/lib/types'
-import { DeepPartial } from 'ai'
-import { motion, type Variants } from 'framer-motion'
+import { Message } from "@/lib/messages";
+import { CodeArtifact } from "@/lib/schema";
+import { DeploymentResult } from "@/lib/types";
+import { DeepPartial } from "ai";
+import { motion, type Variants } from "framer-motion";
 import {
   LoaderIcon,
   Terminal,
@@ -10,18 +10,18 @@ import {
   Lightbulb,
   ChevronRight,
   Sparkles,
-} from 'lucide-react'
-import { useEffect } from 'react'
+} from "lucide-react";
+import { useEffect } from "react";
 
 // ---- helpers ---------------------------------------------------------------
 
 // Only show artifact when there is code
 const doShowArtifact = (msg: Message): boolean =>
-  Array.isArray(msg.codeArtifact?.code) && msg.codeArtifact.code.length > 0
+  Array.isArray(msg.codeArtifact?.code) && msg.codeArtifact.code.length > 0;
 
 // Framer Motion v11 easing (bezier arrays for typing safety)
-const EASE_OUT = [0.22, 1, 0.36, 1] as const
-const EASE_IN_OUT = [0.45, 0, 0.55, 1] as const
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const EASE_IN_OUT = [0.45, 0, 0.55, 1] as const;
 
 const msgVariants: Variants = {
   initial: { opacity: 0, y: 8, scale: 0.98 },
@@ -32,7 +32,7 @@ const msgVariants: Variants = {
     transition: { duration: 0.24, ease: EASE_OUT },
   },
   exit: { opacity: 0, y: 6, transition: { duration: 0.16, ease: EASE_OUT } },
-}
+};
 
 // tiny typing dots
 const Dot = ({ delay = 0 }) => (
@@ -41,11 +41,11 @@ const Dot = ({ delay = 0 }) => (
     animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
     transition={{ duration: 0.9, repeat: Infinity, ease: EASE_IN_OUT, delay }}
   />
-)
+);
 
 // brand styles
 const BRAND_GRADIENT =
-  'bg-gradient-to-br from-violet-500 via-fuchsia-500 to-rose-400'
+  "bg-gradient-to-br from-violet-500 via-fuchsia-500 to-rose-400";
 
 // ---- component -------------------------------------------------------------
 
@@ -54,22 +54,22 @@ export function Chat({
   isLoading,
   setCurrentPreview,
 }: {
-  messages: Message[]
-  isLoading: boolean
+  messages: Message[];
+  isLoading: boolean;
   setCurrentPreview: (preview: {
-    code_artifact: DeepPartial<CodeArtifact> | undefined
-    deploymentResult: DeploymentResult | undefined
-  }) => void
+    code_artifact: DeepPartial<CodeArtifact> | undefined;
+    deploymentResult: DeploymentResult | undefined;
+  }) => void;
 }) {
   useEffect(() => {
-    const chatContainer = document.getElementById('chat-container')
+    const chatContainer = document.getElementById("chat-container");
     if (chatContainer) {
       chatContainer.scrollTo({
         top: chatContainer.scrollHeight,
-        behavior: 'smooth',
-      })
+        behavior: "smooth",
+      });
     }
-  }, [JSON.stringify(messages)])
+  }, [JSON.stringify(messages)]);
 
   return (
     <div
@@ -81,8 +81,8 @@ export function Chat({
         <div className="pointer-events-none sticky top-0 z-10 -mx-4 mb-1 h-0.5">
           <motion.div
             className="h-full w-1/3 rounded-r bg-gradient-to-r from-primary/0 via-primary to-primary/0"
-            initial={{ x: '-33%' }}
-            animate={{ x: '100%' }}
+            initial={{ x: "-33%" }}
+            animate={{ x: "100%" }}
             transition={{ duration: 1.2, repeat: Infinity, ease: EASE_IN_OUT }}
           />
         </div>
@@ -106,13 +106,13 @@ export function Chat({
         className="mx-auto flex w-full max-w-3xl flex-col gap-4"
       >
         {messages.map((message: Message, index: number) => {
-          const isUser = message.role === 'user'
+          const isUser = message.role === "user";
 
           // shells (Lovable-like: user bubble vs assistant card)
           const userBubble =
-            'self-end max-w-[82%] rounded-2xl bg-primary/5 dark:bg-primary/15 px-3 py-2 text-foreground/90 shadow-sm'
+            "self-end max-w-[82%] rounded-2xl bg-primary/5 dark:bg-primary/15 px-3 py-2 text-foreground/90 shadow-sm";
           const toolmindCard =
-            'w-full rounded-2xl border bg-card/75 text-card-foreground backdrop-blur px-5 py-4 shadow-sm'
+            "w-full rounded-2xl border bg-card/75 text-card-foreground backdrop-blur px-5 py-4 shadow-sm";
 
           return (
             <motion.div
@@ -133,9 +133,7 @@ export function Chat({
                       >
                         <Sparkles className="h-3.5 w-3.5 text-white" />
                       </span>
-                      <span className="font-medium text-foreground">
-                        Toolmind
-                      </span>
+                      <span className="font-medium text-foreground">Plug</span>
                     </span>
                     <span className="mx-1 text-muted-foreground/60">•</span>
                     <span className="inline-flex items-center gap-1">
@@ -149,10 +147,10 @@ export function Chat({
               {/* body */}
               <div className="space-y-3 text-[0.9rem] leading-7">
                 {message.content.map((content, id) => {
-                  if (content.type === 'text') {
-                    return <p key={id}>{content.text}</p>
+                  if (content.type === "text") {
+                    return <p key={id}>{content.text}</p>;
                   }
-                  if (content.type === 'image') {
+                  if (content.type === "image") {
                     return (
                       <img
                         key={id}
@@ -160,9 +158,9 @@ export function Chat({
                         alt="fragment"
                         className="mb-2 inline-block h-14 w-14 rounded-xl bg-white object-cover ring-1 ring-black/5 dark:ring-white/10"
                       />
-                    )
+                    );
                   }
-                  return null
+                  return null;
                 })}
               </div>
 
@@ -199,7 +197,7 @@ export function Chat({
                 </motion.button>
               )}
             </motion.div>
-          )
+          );
         })}
       </motion.div>
 
@@ -240,5 +238,5 @@ export function Chat({
         </motion.div>
       )}
     </div>
-  )
+  );
 }
